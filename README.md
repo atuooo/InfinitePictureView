@@ -1,0 +1,2 @@
+# InfinitePictureView
+用UICollectionView写的无限循环图片播放器
