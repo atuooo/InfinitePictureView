@@ -16,6 +16,7 @@ class ViewController: UIViewController {
         
         let frame = CGRect(x: 0, y: 0, width: view.frame.width, height: 200)
         let collectionView = InfinitePictureView(frame: frame, imageNames: images)
+        collectionView.tag = 10
         collectionView.center = view.center
         view.addSubview(collectionView)
         // Do any additional setup after loading the view, typically from a nib.

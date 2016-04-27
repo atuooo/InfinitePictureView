@@ -54,20 +54,37 @@ class InfinitePictureView: UIView {
         addSubview(pageControl)
         
         // set timer
-        timer = NSTimer(timeInterval: timerDuration, target: self, selector: #selector(updatePictureView), userInfo: nil, repeats: true)
-        timer.tolerance = timerDuration * 0.1
-        NSRunLoop.mainRunLoop().addTimer(timer, forMode: NSRunLoopCommonModes)
+        setTimer()
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-// MARK: - timer function
+    deinit {
+        invalidateTimer()
+    }
+    
+// MARK: - Timer function
     func updatePictureView() {
         if !collectionView.tracking && !collectionView.decelerating {
             currentIndex += 1
             collectionView.scrollToItemAtIndexPath(NSIndexPath(forItem: currentIndex, inSection: 0), atScrollPosition: .None, animated: true)
+        }
+    }
+    
+    func setTimer() {
+        if timer == nil {
+            timer = NSTimer(timeInterval: timerDuration, target: self, selector: #selector(updatePictureView), userInfo: nil, repeats: true)
+            timer.tolerance = timerDuration * 0.1
+            NSRunLoop.mainRunLoop().addTimer(timer, forMode: NSRunLoopCommonModes)
+        }
+    }
+    
+    func invalidateTimer() {
+        if timer != nil {
+            timer.invalidate()
+            timer = nil
         }
     }
 }
@@ -101,6 +118,14 @@ extension InfinitePictureView {
             currentIndex = Int(collectionView.contentOffset.x / frame.width)
         }
         pageControl.currentPage = currentIndex - 1
+    }
+    
+    func scrollViewWillBeginDragging(scrollView: UIScrollView) {
+        invalidateTimer()
+    }
+    
+    func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        setTimer()
     }
     
     func scrollViewDidEndScrollingAnimation(scrollView: UIScrollView) {
