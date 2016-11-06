@@ -6,20 +6,20 @@
 //  Copyright © 2016 oOatuo. All rights reserved.
 //
 
-import UIKit
+import UIKit    
 
-private let cellID = "InfiniteCell"
+private let cellID = "InfiniteCellID"
 
 class InfinitePictureView: UIView {
-    private var images: [String]!
-    private var collectionView: UICollectionView!
-    private var pageControl: UIPageControl!
+    fileprivate var images: [String]!
+    fileprivate var collectionView: UICollectionView!
+    fileprivate var pageControl: UIPageControl!
 
-    private var timer: NSTimer!
-    private var timerDuration: NSTimeInterval = 3.0
+    fileprivate var timer: Timer?
+    fileprivate var timerDuration: TimeInterval = 3.0
     
-    private var currentIndex = 1
-    private var pictureCount = 0
+    fileprivate var currentIndex = 1
+    fileprivate var pictureCount = 0
     
     init(frame: CGRect, imageNames: [String]) {
         super.init(frame: frame)
@@ -27,7 +27,7 @@ class InfinitePictureView: UIView {
         // handle dataSource 
         images = imageNames
         images.append(imageNames.first!)
-        images.insert(imageNames.last!, atIndex: 0)
+        images.insert(imageNames.last!, at: 0)
         pictureCount = imageNames.count
         
         // set collection view
@@ -35,16 +35,16 @@ class InfinitePictureView: UIView {
         layout.itemSize = CGSize(width: frame.width, height: frame.height)
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
-        layout.scrollDirection = .Horizontal
+        layout.scrollDirection = .horizontal
         collectionView = UICollectionView(frame: bounds, collectionViewLayout: layout)
-        collectionView.pagingEnabled = true
+        collectionView.isPagingEnabled = true
         collectionView.bounces = false
         collectionView.showsHorizontalScrollIndicator = false
         
-        collectionView.registerClass(InfinitePictureViewCell.self, forCellWithReuseIdentifier: cellID)
+        collectionView.register(InfinitePictureViewCell.self, forCellWithReuseIdentifier: cellID)
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.scrollToItemAtIndexPath(NSIndexPath(forItem: 1, inSection: 0), atScrollPosition: .None, animated: false)
+        collectionView.scrollToItem(at: IndexPath(item: 1, section: 0), at: UICollectionViewScrollPosition(), animated: false)
         addSubview(collectionView)
         
         // set page control
@@ -67,36 +67,37 @@ class InfinitePictureView: UIView {
     
 // MARK: - Timer function
     func updatePictureView() {
-        if !collectionView.tracking && !collectionView.decelerating {
+        if !collectionView.isTracking && !collectionView.isDecelerating {
             currentIndex += 1
-            collectionView.scrollToItemAtIndexPath(NSIndexPath(forItem: currentIndex, inSection: 0), atScrollPosition: .None, animated: true)
+            collectionView.scrollToItem(at: IndexPath(item: currentIndex, section: 0), at: UICollectionViewScrollPosition(), animated: true)
         }
     }
     
     func setTimer() {
-        if timer == nil {
-            timer = NSTimer(timeInterval: timerDuration, target: self, selector: #selector(updatePictureView), userInfo: nil, repeats: true)
-            timer.tolerance = timerDuration * 0.1
-            NSRunLoop.mainRunLoop().addTimer(timer, forMode: NSRunLoopCommonModes)
+        guard let _ = timer else {
+            
+            timer = Timer(timeInterval: timerDuration, target: self, selector: #selector(updatePictureView), userInfo: nil, repeats: true)
+            timer?.tolerance = timerDuration * 0.1
+            RunLoop.main.add(timer!, forMode: RunLoopMode.commonModes)
+
+            return
         }
     }
     
     func invalidateTimer() {
-        if timer != nil {
-            timer.invalidate()
-            timer = nil
-        }
+        timer?.invalidate()
+        timer = nil
     }
 }
 
 // MARK: - UICollectionView Delegate
 extension InfinitePictureView: UICollectionViewDelegate, UICollectionViewDataSource {
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return images.count
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(cellID, forIndexPath: indexPath) as! InfinitePictureViewCell
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! InfinitePictureViewCell
         cell.imageView.image = UIImage(named: "\(images[indexPath.item])")
         return cell
     }
@@ -104,7 +105,7 @@ extension InfinitePictureView: UICollectionViewDelegate, UICollectionViewDataSou
 
 // MARK: - UIScrollView Delegate 
 extension InfinitePictureView {
-    func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let lastItemOffsetX = collectionView.contentSize.width - collectionView.frame.width
         let firstItemOffsetX = collectionView.frame.width
         
@@ -120,15 +121,15 @@ extension InfinitePictureView {
         pageControl.currentPage = currentIndex - 1
     }
     
-    func scrollViewWillBeginDragging(scrollView: UIScrollView) {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         invalidateTimer()
     }
     
-    func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         setTimer()
     }
     
-    func scrollViewDidEndScrollingAnimation(scrollView: UIScrollView) {
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         if currentIndex == images.count - 1 {
             collectionView.contentOffset = CGPoint(x: frame.width, y: 0)
             currentIndex = 1

@@ -10,14 +10,13 @@ import UIKit
 
 class InfinitePictureViewCell: UICollectionViewCell {
     var imageView: UIImageView!
-    var label: UILabel!
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         imageView = UIImageView(frame: self.bounds)
-        imageView.contentMode = .ScaleAspectFill
+        imageView.contentMode = .scaleAspectFill
         
-        self.addSubview(imageView)
+        addSubview(imageView)
     }
     
     required init?(coder aDecoder: NSCoder) {
